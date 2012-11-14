@@ -33,9 +33,28 @@ function devel_create_users($num, $kill, $age = 0, $roles = array()) {
 
   if ($num > 0) {
     $names = array();
+	//by penn
+	$i = 0;
+	//by penn get first role name
+	$role_name = 'normal';	
+	foreach($roles as $key=>$v)
+	{
+		if ($v == 0)
+		{
+			continue;
+		}
+		else
+		{
+			$role = db_query('SELECT r.name FROM {role} r WHERE r.rid=:id LIMIT 1', array(':id'=>$v))->fetchField();
+			$role_name = $role;
+			break;
+		}
+	}
     while (count($names) < $num) {
-      $name = devel_generate_word(mt_rand(6, 12));
-      $names[$name] = '';
+      //by penn user special num name
+	  	$name = $role_name.++$i;
+		//$name = devel_generate_word(mt_rand(6, 12));
+      	$names[$name] = '';
     }
 
     if (empty($roles)) {
@@ -45,7 +64,7 @@ function devel_create_users($num, $kill, $age = 0, $roles = array()) {
       $edit = array(
         'uid'     => NULL,
         'name'    => $name,
-        'pass'    => NULL, // No password avoids user_hash_password() which is expensive.
+        'pass'    => '123', //NULL, // No password avoids user_hash_password() which is expensive.
         'mail'    => $name . '@' . $url['host'],
         'status'  => 1,
         'created' => REQUEST_TIME - mt_rand(0, $age),
@@ -598,7 +617,9 @@ function devel_generate_add_terms(&$node) {
 
 function devel_get_users() {
   $users = array();
-  $result = db_query_range("SELECT uid FROM {users}", 0, 50);
+  //by penn
+//  $result = db_query_range("SELECT uid FROM {users}", 0, 50);
+$result = db_query("SELECT uid FROM {users}");
   foreach ($result as $record) {
     $users[] = $record->uid;
   }
@@ -671,8 +692,24 @@ function devel_generate_content_add_node(&$results) {
   // Insert new data:
   $node->type = array_rand($results['node_types']);
   node_object_prepare($node);
-  $users = $results['users'];
-  $node->uid = $users[array_rand($users)];
+  //$users = $results['users'];
+  //prevent Anonymous users by penn
+  $filter_users = array();
+  foreach ($results['users'] as $user) {
+    if (user_access("create $node->type content", user_load($user)) && $user != 1) {
+      $filter_users[] = $user;
+    }
+  } 
+  $users = $filter_users;
+  //by penn
+  if (count($users) == 0)
+  {
+  	$node->uid = 0;
+  }
+  else
+  {
+  	$node->uid = $users[array_rand($users)];
+  }
   $type = node_type_get_type($node);
   $node->title = $type->has_title ? devel_create_greeking(mt_rand(2, $results['title_length']), TRUE) : '';
   $node->revision = mt_rand(0,1);
