@@ -1,0 +1,45 @@
+<?php
+/**
+ * Implements hook_form_FORM_ID_alter() for the registration form.
+ */
+function cw_create_user_form_user_register_form_alter(&$form, &$form_state)
+{
+	// add radio for hunter or company type
+	$form['user_type'] = array(
+		'#weight'=>-100,
+		'#type'=>'radios',
+		'#title'=>t('Choose user type please'),
+		'#description'=>t('Hunter or Company.'),
+		'#options'=> array(
+			t('hunter'),
+			t('company'),
+		),
+		'#default_value'=>0, // Default to Never
+	);
+}
+
+function cw_create_user_user_insert(&$edit, $account, $category)
+{
+	if (!empty($account->user_type) && $account->user_type == 0)
+	{
+		// User ID of user that you want to add role to.
+		$uid = $account->uid;
+		// The name of the role to add.
+		$role_name = 'hunter';
+		if ($role = user_role_load_by_name($role_name))
+		{
+			user_multiple_role_edit(array($uid), 'add_role', $role->rid);
+		}
+	}
+	if (!empty($account->user_type) && $account->user_type == 1)
+	{
+		// User ID of user that you want to add role to.
+		$uid = $account->uid;
+		// The name of the role to add.
+		$role_name = 'company';
+		if ($role = user_role_load_by_name($role_name))
+		{
+			user_multiple_role_edit(array($uid), 'add_role', $role->rid);
+		}
+	}
+}

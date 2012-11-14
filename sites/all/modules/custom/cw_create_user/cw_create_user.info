@@ -1,0 +1,4 @@
+name = CW Create User
+description = Support to create hunter or company type user profile.
+core = 7.x
+dependencies[] = profile2
