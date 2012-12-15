@@ -824,32 +824,6 @@ function profile2_field_access($op, $field, $entity_type, $profile = NULL, $acco
 }
 
 /**
- * Implements hook_field_extra_fields().
- *
- * We need to add pseudo fields for profile types to allow for weight settings
- * when viewing a user or filling in the profile types while registrating.
- */
-function profile2_field_extra_fields() {
-  $extra = array();
-  foreach (profile2_get_types() as $type_name => $type) {
-    // appears on: admin/config/people/accounts/display
-    $extra['user']['user']['display']['profile_' . $type_name] = array(
-      'label' => t('Profile: @profile', array('@profile' => $type->label)),
-      'weight' => $type->weight,
-    );
-    // appears on: admin/config/people/accounts/fields
-    if (!empty($type->data['registration'])) {
-      $extra['user']['user']['form']['profile_' . $type_name] = array(
-        'label' => t('Profile: @profile', array('@profile' => $type->label)),
-        'description' => t('Appears during registration only.'),
-        'weight' => $type->weight,
-      );
-    }
-  }
-  return $extra;
-}
-
-/**
  * Entity metadata callback to load profiles for the given user account.
  */
 function profile2_user_get_properties($account, array $options, $name) {

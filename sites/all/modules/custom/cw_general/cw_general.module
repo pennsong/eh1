@@ -1,0 +1,116 @@
+<?php
+function cw_general_menu()
+{
+	$items['node/%/fit_talent_list'] = array(
+		'title'=>'Fit talent list',
+		'description'=>'talents fit this job.',
+		'type'=>MENU_LOCAL_TASK,
+		'page callback'=>'cw_general_fit_talent',
+		'page arguments'=> array(1),
+		'access callback'=>'cw_general_check_fit_talent_access',
+		'access arguments'=> array(1),
+	);
+	return $items;
+}
+
+function cw_general_check_fit_talent_access($nid)
+{
+	global $user;
+	$node = node_load($nid);
+	return (($node->type == 'job') && ($node->uid == $user->uid));
+}
+
+function cw_general_fit_talent($nid)
+{
+	//get job requirement
+	$job = node_load($nid);
+	$query = new EntityFieldQuery();
+	$query->entityCondition('entity_type', 'node')->entityCondition('bundle', 'talent')->propertyCondition('status', 1);
+	if (!empty($job->field_job_height_from['und'][0]['value']))
+	{
+		$query = $query->fieldCondition('field_talent_height', 'value', $job->field_job_height_from['und'][0]['value'], '>=');
+	}
+	if (!empty($job->field_job_height_to['und'][0]['value']))
+	{
+		$query = $query->fieldCondition('field_talent_height', 'value', $job->field_job_height_to['und'][0]['value'], '<=');
+	}
+	if (!empty($job->field_job_sex['und'][0]['tid']))
+	{
+		$query = $query->fieldCondition('field_talent_sex', 'tid', array($job->field_job_sex['und'][0]['tid']));
+	}
+	if (!empty($job->field_job_education['und'][0]['value']))
+	{
+		$query = $query->fieldCondition('field_talent_education', 'value', $job->field_job_education['und'][0]['value'], '>=');
+	}
+	if (!empty($job->field_job_city['und'][0]['tid']))
+	{
+		$query = $query->fieldCondition('field_talent_city', 'tid', array($job->field_job_city['und'][0]['tid']));
+	}
+	$query = $query->propertyOrderBy('created', 'DESC')->pager(3);
+	$result = $query->execute();
+	$output = '';
+	if (!empty($result['node']))
+	{
+		$nids = array_keys($result['node']);
+		$nodes = node_load_multiple($nids);
+		$output = drupal_render(node_view_multiple($nodes));
+		$output .= theme('pager', array('nodes'=>$nodes));
+	}
+	else
+	{
+		$output = t('No Result');
+	}
+	return $output;
+}
+
+/**
+ * Implementation of hook_views_api().
+ */
+function cw_general_views_api()
+{
+	return array(
+		'api'=>3.0,
+		'path'=>drupal_get_path('module', 'cw_general').'/includes'
+	);
+}
+
+function cw_general_views_query_alter(&$view, &$query)
+{
+	if ($view->name == 'job_list')
+	{
+		// make sure this is the correct view
+		if (count($query->where[1]['conditions']))
+		{
+			foreach ($query->where[1]['conditions'] as &$cond)
+			{
+				if (is_string($cond['field']) && $cond['field'] == 'field_data_field_job_education.field_job_education_value')
+				{
+					$cond['operator'] = '<=';
+					// override the operator (greater than and equal to)
+				}
+			}
+		}
+	}
+	else if ($view->name == 'talent_list')
+	{
+		if (count($query->where[1]['conditions']))
+		{
+			foreach ($query->where[1]['conditions'] as &$cond)
+			{
+				if (is_string($cond['field']) && $cond['field'] == 'field_data_field_talent_height.field_talent_height_value')
+				{
+					if ($cond['value'][1] == '')
+					{
+						$cond['value'][1] = '999';
+					}
+					// override the operator (greater than and equal to)
+				}
+				else if (is_string($cond['field']) && $cond['field'] == 'field_data_field_talent_education.field_talent_education_value')
+				{
+					$cond['operator'] = '>=';
+					// override the operator (greater than and equal to)
+				}
+			}
+		}
+	}
+}

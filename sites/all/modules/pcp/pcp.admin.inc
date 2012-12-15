@@ -82,7 +82,7 @@ function pcp_form_profile2_type_form_alter(&$form, &$form_state, $form_id) {
   $options = array();
   $settings = pcp_admin_settings_form_data('profile2', $bundle);
   foreach ($settings['profile_fields_options'] as $fiid => $field_name) {
-    $field_info = field_info_instance('user', 'field_zucht', 'user');
+    $field_info = field_info_instance('profile2', $field_name, $bundle);
     $options[$fiid] = $field_info['label'];
   }
   $form['profile_complete']['profile_fields'] = array(

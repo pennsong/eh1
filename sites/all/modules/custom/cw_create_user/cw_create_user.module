@@ -20,7 +20,7 @@ function cw_create_user_form_user_register_form_alter(&$form, &$form_state)
 
 function cw_create_user_user_insert(&$edit, $account, $category)
 {
-	if (!empty($account->user_type) && $account->user_type == 0)
+	if (isset($account->user_type) && $account->user_type == 0)
 	{
 		// User ID of user that you want to add role to.
 		$uid = $account->uid;
@@ -31,7 +31,7 @@ function cw_create_user_user_insert(&$edit, $account, $category)
 			user_multiple_role_edit(array($uid), 'add_role', $role->rid);
 		}
 	}
-	if (!empty($account->user_type) && $account->user_type == 1)
+	if (isset($account->user_type) && $account->user_type == 1)
 	{
 		// User ID of user that you want to add role to.
 		$uid = $account->uid;
@@ -41,5 +41,30 @@ function cw_create_user_user_insert(&$edit, $account, $category)
 		{
 			user_multiple_role_edit(array($uid), 'add_role', $role->rid);
 		}
+	}
+}
+
+function cw_create_user_form_profile2_edit_hunter_certificate_profile_form_alter(&$form, &$form_state)
+{
+	$form['bank_account_confirm'] = array(
+		'#weight'=>1,
+		'#type'=>'textfield',
+		'#title'=>t('Type bank account again'),
+		'#description'=>t('Confirm bank account.'),
+		'#size'=>30
+	);
+	array_unshift($form['#validate'], 'cw_create_user_bank_account_validate');
+}
+
+/**
+ * Validate profile form
+ * confirm bank account
+ *
+ */
+function cw_create_user_bank_account_validate($form, $form_state)
+{
+	if ($form_state['values']['profile_hunter_certificate_profile']['field_hunter_profile_bank_acc']['und'][0]['value'] != $form_state['values']['bank_account_confirm'])
+	{
+		form_set_error('bank_account_confirm', t('Bank account not confirmed!'));
 	}
 }
