@@ -24,6 +24,22 @@
  * @ingroup views_templates
  */
 ?>
+<script>
+	jQuery(document).ready(function()
+	{
+		jQuery(".form-tags").hide();
+		jQuery(".add").hide();
+		jQuery(".tag-widget").hover(
+			function () {
+    			jQuery(".form-tags", this).show();
+    			jQuery(".add", this).show();
+ 				 }, 
+ 			function () {
+    			jQuery(".form-tags", this).hide();
+    			jQuery(".add", this).hide();
+  			});
+		}); 
+</script>
 <?php
 if (!function_exists('get_trade_status_str'))
 {
@@ -33,6 +49,9 @@ if (!function_exists('get_trade_status_str'))
 	}
 }
 ?>
+<div>
+	<?php print _community_tags_node_view($fields['nid']->raw, TRUE); ?>
+</div>
 <div>
 	<?php if (get_trade_status_str($fields['field_trade_status']->content) == 'offer邀请'): ?>	
 	<div style="width:50px; display:inline-block" class="offer_invite trade_status">
@@ -88,6 +107,6 @@ if (!function_exists('get_trade_status_str'))
 		</div>
 	</div>
 	<div style="width:300px; display:inline-block">
-		<?php print _community_tags_node_view($fields['nid']->raw, TRUE); ?>
+
 	</div>
 </div>

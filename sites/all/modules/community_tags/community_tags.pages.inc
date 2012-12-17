@@ -41,7 +41,10 @@ function community_tags_form($form, &$form_state, $edit, $title = NULL) {
     $my_title = t('My !name tags', array('!name' => $vocabulary->name));
   }
   else {
-    $my_title = t('My tags');
+  	//by penn: remove title
+   // $my_title = t('My tags');
+   $my_title="";
+	//end penn
   }
 
   $form['tags'] = array(

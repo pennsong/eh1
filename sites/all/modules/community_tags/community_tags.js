@@ -62,7 +62,7 @@
           // Clear field and focus it.
           textfield.val('').focus();
         };
-        var button = $('<input type="button" class="form-button" value="'+ Drupal.communityTags.checkPlain(o.add) +'" />').click(addHandler);
+        var button = $('<input type="button" class="form-button add" value="'+ Drupal.communityTags.checkPlain(o.add) +'" />').click(addHandler);
         $(this.form).submit(function () { addHandler(); return false; });
 
         // Prepare the delete Ajax handler.
@@ -105,7 +105,7 @@
 
         // Create widget markup.
         // @todo theme this.
-        var widget = $('<div class="tag-widget"><ul class="inline-tags clearfix"></ul></div>');
+        var widget = $('<div class="tag-widget" style="background-color: #EEEEEE"><ul class="inline-tags" style="height: 25px"></ul></div>');
         textfield.before(widget);
         widget.append(textfield).append(button);
         var list = $('ul', widget);
