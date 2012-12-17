@@ -569,8 +569,11 @@ function _community_tags_node_view($node, $inline = TRUE) {
     $tags = community_tags_get_user_node_tags($user->uid, $node->nid, $vid);
 
     $display_handler = _community_tags_get_display_handler($vid, $node->type, $inline);
-    $cloud = call_user_func($display_handler['fn'], 'node', NULL, $node->nid, $vid);
-
+	
+	//by penn: unset $cloud to disable all tags showing
+    //$cloud = call_user_func($display_handler['fn'], 'node', NULL, $node->nid, $vid);
+	$cloud = '';
+	//end penn
 
     if (!count($tags)) {
       // User has not yet added tags to this node yet. Show form.
@@ -594,7 +597,6 @@ function _community_tags_node_view($node, $inline = TRUE) {
     // TODO might want to optimise this call
     // drupal_add_js(array('communityTags' => array('n_' . $node->nid => array('v_' . $vid => array('tags' => $names, 'url' => url('community-tags/js/' . $node->nid . '/' . $vid), 'add' => t('Add'), 'token' => drupal_get_token('community_tags_form'))))), array('type' => 'setting', 'scope' => JS_DEFAULT));
   }
-
   return $output;
 }
 
