@@ -24,29 +24,6 @@
  * @ingroup views_templates
  */
 ?>
-<script>
-	jQuery(document).ready(function()
-	{
-		jQuery(".form-tags").hide();
-		jQuery(".add").hide();
-		jQuery(".tag-widget").hover(
-			function () {
-    			jQuery(".form-tags", this).show();
-    			jQuery(".add", this).show();
- 				 }, 
- 			function () {
-    			jQuery(".form-tags", this).hide();
-    			jQuery(".add", this).hide();
-  			});
-  		jQuery(".talent_area").hover(
-			function () {
-    			jQuery(".talent_abstract", this).show();
- 				 }, 
- 			function () {
-    			jQuery(".talent_abstract", this).hide();
-  			});
-	}); 
-</script>
 <?php
 if (!function_exists('get_trade_status_str'))
 {
@@ -101,7 +78,7 @@ if (!function_exists('get_trade_status_str'))
 		<div style="position:relative">
 			<?php print $fields['title_2']->label_html.$fields['title_2']->content; ?>
 			<div class="talent_abstract" style="position:absolute; display:none; z-index: 1000; background-color: #EEEEBB">
-				<?php echo drupal_render(node_view(node_load(5245), 'small')); ?>
+				<?php echo drupal_render(node_view(node_load($fields['nid_1']->raw), 'small')); ?>
 			</div>
 		</div>
 		<div>
@@ -117,6 +94,53 @@ if (!function_exists('get_trade_status_str'))
 		</div>
 	</div>
 	<div style="width:300px; display:inline-block">
+	<?php
+	//case 面试邀请
+	if (get_trade_status_str($fields['field_trade_status']->content) == '面试邀请')
+	{
+		//查找最新面试邀请entity
+		$query = new EntityFieldQuery();
 
+		$query->entityCondition('entity_type', 'node')
+		  ->entityCondition('bundle', 'interview_invite')
+		  ->propertyCondition('status', 1)
+		  ->fieldCondition('field_interview_trade', 'target_id', $fields['nid']->raw, '=')
+		   ->propertyOrderBy('created', 'DESC')
+		  ->range(0, 1);
+		
+		$result = $query->execute();
+		if (isset($result['node'])) 
+		{
+ 	 		foreach($result['node'] as $node)
+			{
+				$interview_invite = node_load($node->nid);
+				if (isset($interview_invite->field_interview_time_start['und'][0]['value']))
+				{
+					//明确指定面试时间			
+					print render(field_view_field('node', $interview_invite, 'field_interview_time_start', 'small'));
+				}
+				else
+				{
+					echo '面试时间:';
+					echo '<div class=date_choose style="display:inline-block">';
+					echo '<input type="hidden" value="'.$node->nid.'"/>';
+					echo '<div class="day" style="display:inline-block"></div>';
+					echo '<div class="hour" style="display:inline-block"><select class="choose_hour"><option value="">请选择</option></select></div>';
+					echo '<div class="minute" style="display:inline-block"><select class="choose_minute"><option value="">请选择</option></select></div>';
+					echo '</div>';
+				}
+				echo "<div>面试地点:";
+				if (!empty($interview_invite->field_interview_invite_address['und'][0]['value']))
+				{
+					echo $interview_invite->field_interview_invite_address['und'][0]['value'];
+				}
+				echo "</div>";
+				echo "<div>邀请发布时间:";
+				echo date("y/m/d H:i", $interview_invite->created);
+				echo "</div>";
+			}
+		}
+	}
+	?>
 	</div>
 </div>

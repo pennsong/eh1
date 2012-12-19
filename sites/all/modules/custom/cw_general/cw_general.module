@@ -10,7 +10,184 @@ function cw_general_menu()
 		'access callback'=>'cw_general_check_fit_talent_access',
 		'access arguments'=> array(1),
 	);
+	$items['interview_choose_option_day/%'] = array(
+		'page callback'=>'cw_general_get_interview_choose_option_day',
+		'page arguments'=> array(1),
+		'type'=>MENU_CALLBACK,
+		'access callback'=>TRUE,
+	);
+	$items['interview_choose_option_hour/%/%'] = array(
+		'page callback'=>'cw_general_get_interview_choose_option_hour',
+		'page arguments'=> array(
+			1,
+			2
+		),
+		'type'=>MENU_CALLBACK,
+		'access callback'=>TRUE,
+	);
+	$items['interview_choose_option_minute/%/%/%'] = array(
+		'page callback'=>'cw_general_get_interview_choose_option_minute',
+		'page arguments'=> array(
+			1,
+			2,
+			3
+		),
+		'type'=>MENU_CALLBACK,
+		'access callback'=>TRUE,
+	);
 	return $items;
+}
+
+function cw_general_get_interview_choose_option($interview_invite)
+{
+	$interview_invite_obj = node_load($interview_invite);
+	$interview_arrangement = node_load($interview_invite_obj->field_interview_arrangement['und'][0]['target_id']);
+	if (!empty($interview_arrangement->field_interview_duration['und'][0]['value']) && $interview_arrangement->field_interview_duration['und'][0]['value'] <= 30)
+	{
+		//面试时间点间隔分钟数
+		$interval = 30;
+	}
+	else
+	{
+		//面试时间点间隔分钟数
+		$interval = 60;
+	}
+	//所有可选时间
+	$option = array();
+	$wrapper = entity_metadata_wrapper('node', $interview_arrangement);
+	foreach ($wrapper->field_interview_choose as $i)
+	{
+		$start_time = $i->field_start_time->value();
+		$end_time = $i->field_end_time->value();
+		//开始时间取整
+		if (date("i", $start_time) != 0)
+		{
+			// add interval to the time
+			$start_time = $start_time + ($interval * 60);
+		}
+		// round DOWN to nearest half hour
+		$start_time = floor($start_time / ($interval * 60)) * ($interval * 60);
+		//结束时间取整
+		// round DOWN to nearest half hour
+		$end_time = floor($end_time / ($interval * 60)) * ($interval * 60);
+		$tNow = $start_time;
+		$tEnd = $end_time;
+		while ($tNow <= $tEnd)
+		{
+			$day = date("Y_m_d", $tNow);
+			$hour = date("H", $tNow);
+			$minute = date("i", $tNow);
+			if (!isset($option[$day]))
+			{
+				$option[$day] = array();
+			}
+			if (!isset($option[$day][$hour]))
+			{
+				$option[$day][$hour] = array();
+			}
+			if (!in_array($minute, $option[$day][$hour]))
+			{
+				array_push($option[$day][$hour], $minute);
+			}
+			$tNow = strtotime('+'.$interval.' minutes', $tNow);
+		}
+	}
+	ksort($option);
+	//取得已经预约的时间点
+	$get_term = taxonomy_get_term_by_name('接受', 'invite_status');
+	$term_id =          array_pop($get_term)->tid;
+	$sub_query = new EntityFieldQuery();
+	$sub_query->entityCondition('entity_type', 'node')->entityCondition('bundle', 'interview_invite')->propertyCondition('status', 1)->fieldCondition('field_interview_status', 'tid', $term_id, '=');
+	$sub_result = $sub_query->execute();
+	$option_occupied = array();
+	if (isset($sub_result['node']))
+	{
+		foreach ($sub_result['node'] as $sub_node)
+		{
+			$sub_interview_invite = node_load($sub_node->nid);
+			$wrapper = entity_metadata_wrapper('node', $sub_interview_invite);
+			$tNow = $wrapper->field_interview_time_start->value();
+			$day = date("Y_m_d", $tNow);
+			$hour = date("H", $tNow);
+			$minute = date("i", $tNow);
+			if (!isset($option_occupied[$day]))
+			{
+				$option_occupied[$day] = array();
+			}
+			if (!isset($option_occupied[$day][$hour]))
+			{
+				$option_occupied[$day][$hour] = array();
+			}
+			if (!in_array($minute, $option_occupied[$day][$hour]))
+			{
+				array_push($option_occupied[$day][$hour], $minute);
+			}
+		}
+	}
+	foreach ($option_occupied as $id_d=>$item_d)
+	{
+		foreach ($item_d as $id_h=>$item_h)
+		{
+			foreach ($item_h as $id_m=>$item_m)
+			{
+				if (isset($option[$id_d][$id_h][$id_m]))
+				{
+					unset($option[$id_d][$id_h][$id_m]);
+				}
+			}
+			if (empty($option[$id_d][$id_h]))
+			{
+				unset($option[$id_d][$id_h]);
+			}
+		}
+		if (empty($option[$id_d]))
+		{
+			unset($option[$id_d]);
+		}
+	}
+	return $option;
+}
+
+function cw_general_get_interview_choose_option_day($interview_invite)
+{
+	$option = cw_general_get_interview_choose_option($interview_invite);
+	//有统一安排面试时间供选择
+	//使用$option中元素构造时间选择列表
+	echo '<select class="choose_day">';
+	echo '<option value="">请选择</option>';
+	foreach ($option as $id=>$item)
+	{
+		echo '<option value="'.$id.'">'.$id.'</option>';
+	}
+	echo "</select>";
+}
+
+function cw_general_get_interview_choose_option_hour($interview_invite, $day)
+{
+	$option = cw_general_get_interview_choose_option($interview_invite);
+	//有统一安排面试时间供选择
+	//使用$option中元素构造时间选择列表
+	echo '<select class="choose_hour">';
+	echo '<option value="">请选择</option>';
+	foreach ($option[$day] as $id=>$item)
+	{
+		echo '<option value="'.$id.'">'.$id.'</option>';
+	}
+	echo "</select>";
+}
+
+function cw_general_get_interview_choose_option_minute($interview_invite, $day, $hour)
+{
+	$option = cw_general_get_interview_choose_option($interview_invite);
+	//有统一安排面试时间供选择
+	//使用$option中元素构造时间选择列表
+	echo '<select class="choose_minute">';
+	echo '<option value="">请选择</option>';
+	foreach ($option[$day][$hour] as $id=>$item)
+	{
+		echo '<option value="'.$item.'">'.$item.'</option>';
+	}
+	echo "</select>";
 }
 
 function cw_general_check_fit_talent_access($nid)
