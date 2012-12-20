@@ -97,8 +97,10 @@ function cw_general_interview_dynamic_area($trade)
 				{
 					$result_str .= '面试时间:';
 					$result_str .= '<div class=date_choose>';
-					$result_str .= '<input type="hidden" value="'.$node->nid.'"/>';
-					$result_str .= '<div class="day" style="display:inline-block"></div>';
+					$result_str .= '<input class="interview_invite_id" type="hidden" value="'.$node->nid.'"/>';
+					$result_str .= '<div class="day" style="display:inline-block">';
+					$result_str .= cw_general_get_interview_choose_option_day_widget($interview_invite);
+					$result_str .= '</div>';
 					$result_str .= '<div class="hour" style="display:inline-block"><select class="choose_hour"><option value="">请选择</option></select></div>';
 					$result_str .= '<div class="minute" style="display:inline-block"><select class="choose_minute"><option value="">请选择</option></select></div>';
 					$result_str .= '</div>';
@@ -115,7 +117,7 @@ function cw_general_interview_dynamic_area($trade)
 			}
 		}
 		$result_str .= '</div>';
-		$result_str .= '<div style="width:46px; display:inline-block">';
+		$result_str .= '<div class="reply" style="width:46px; display:inline-block">';
 		$result_str .= '<input type="hidden" value="'.$interview_invite.'" />';
 		$result_str .= '<div><button class="accept" type="button">确认面试</button></div>';
 		$result_str .= '<div><button class="reject" type="button">拒绝面试</button></div>';
@@ -142,7 +144,7 @@ function cw_general_interview_dynamic_area($trade)
 				$result_str .= '面试地点:'.$interview_invite_wrapper->field_interview_invite_address->value();
 				$result_str .= '</div>';
 				$result_str .= '</div>';
-				$result_str .= '<div style="width:46px; display:inline-block">';
+				$result_str .= '<div class="reply" style="width:46px; display:inline-block">';
 				$result_str .= '<input type="hidden" value="'.$interview_invite.'"/>';
 				$result_str .= '<div><button class="reject" type="button">拒绝面试</button></div>';
 				$result_str .= '</div>';
@@ -315,18 +317,26 @@ function cw_general_get_interview_choose_option($interview_invite)
 	return $option;
 }
 
+
 function cw_general_get_interview_choose_option_day($interview_invite)
 {
+	echo cw_general_get_interview_choose_option_day_widget($interview_invite);
+}
+
+function cw_general_get_interview_choose_option_day_widget($interview_invite)
+{
+	$result_str = '';
 	$option = cw_general_get_interview_choose_option($interview_invite);
 	//有统一安排面试时间供选择
 	//使用$option中元素构造时间选择列表
-	echo '<select class="choose_day">';
-	echo '<option value="">请选择</option>';
+	$result_str .= '<select class="choose_day">';
+	$result_str .= '<option value="">请选择</option>';
 	foreach ($option as $id=>$item)
 	{
-		echo '<option value="'.$id.'">'.$id.'</option>';
+		$result_str .= '<option value="'.$id.'">'.$id.'</option>';
 	}
-	echo "</select>";
+	$result_str .= "</select>";
+	return $result_str;
 }
 
 function cw_general_get_interview_choose_option_hour($interview_invite, $day)

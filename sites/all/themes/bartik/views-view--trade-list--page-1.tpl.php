@@ -29,18 +29,6 @@
 ?>
 <script>
 	jQuery(document).ready(function() {
-		jQuery(".dynamic").each(function(){
-			var ajaxURL = '<?php global $base_url; echo $base_url; ?>' + '/interview_dynamic_area/' + jQuery(this).siblings(".trade_id").val();
-			jQuery(this).load(ajaxURL, function(responseText, textStatus, XMLHttpRequest) {
-				if(textStatus == 'success') {
-					 	init();
-				}
-			}); 
-		});
-
-	});
-	function init()
-	{
 		jQuery(".form-tags").hide();
 		jQuery(".add").hide();
 		jQuery(".tag-widget").hover(
@@ -58,15 +46,15 @@
  				 }, 
  			function () {
     			jQuery(".talent_abstract", this).hide();
-  			});
-  		jQuery('.date_choose').each(function(index) {
-  			var this_date_choose = this;
-    		var interview_invite_id = jQuery('input', this).val();
-    		var ajaxURLday = '<?php global $base_url; echo $base_url; ?>' + '/interview_choose_option_day/' + interview_invite_id;
-    		jQuery(".day", this_date_choose).load(ajaxURLday, function(responseText, textStatus, XMLHttpRequest) {
+  		});		
+		jQuery(".dynamic").each(function(){
+			var ajaxURL = '<?php global $base_url; echo $base_url; ?>' + '/interview_dynamic_area/' + jQuery(this).siblings(".trade_id").val();
+			jQuery(this).load(ajaxURL, function(responseText, textStatus, XMLHttpRequest) {
 				if(textStatus == 'success') {
-					jQuery(".choose_day", this).change(function()
-					{
+					var this_interview_info = jQuery(this).children(".interview_info");
+					var this_date_choose = jQuery(this).children(".interview_info").children(".date_choose");
+					var interview_invite_id = jQuery(this).children(".interview_info").children(".date_choose").children(".interview_invite_id").val();
+					jQuery(this).children(".interview_info").children(".date_choose").children(".day").children(".choose_day").change(function(){
 						var day_value = jQuery(this).val();
 						if (day_value == '')
 						{
@@ -93,50 +81,48 @@
 						}); 
 						jQuery(".minute", this_date_choose).html('<select class="choose_minute"><option value="">请选择</option></select>');
 					});
-				}
-			});   		
-		});
-		jQuery('.accept').click(function(){
-			if (jQuery(this).parent().parent().siblings(".interview_info").children(".field-name-field-interview-time-start").children(".date-display-single").length > 0)
-			{
-				var date_str = jQuery(this).parent().parent().siblings(".interview_info").children(".field-name-field-interview-time-start").children(".date-display-single").html();
-				var year = date_str.substr(0, 4);
-				var month = date_str.substr(5, 2);
-				var day = date_str.substr(8, 2);
-				var hour = date_str.substr(11, 2);
-				var minute = date_str.substr(14, 2);				
-				var choose_date = new Date(year, month-1, day, hour, minute, 0).getTime()/1000;
-			}
-			else
-			{
-				var date_element = jQuery(this).parent().parent().siblings(".interview_info").children(".date_choose");
-				var day = date_element.children(".day").children(".choose_day").val();
-				var hour = date_element.children(".hour").children(".choose_hour").val();
-				var minute = date_element.children(".minute").children(".choose_minute").val();
-				if (day == '' || hour == '' || minute == '')
-				{
-					alert('请选择时间');
-					return false;
-				}
-				var day_array = day.split('_');
-				var choose_date = new Date(day_array[0],day_array[1]-1,day_array[2],hour,minute,0).getTime()/1000;
-			}
-			var ajaxURL = '<?php global $base_url; echo $base_url; ?>' + '/interview_reply/' + jQuery(this).parent().siblings("input").val() + "/accept/" + choose_date;
-			jQuery(this).parent().parent().parent(".dynamic").load(ajaxURL, function(responseText, textStatus, XMLHttpRequest) {
-				if(textStatus == 'success') {
-					init();
-				}
-			}); 
-		});
-		jQuery('.reject').click(function(){
-			var ajaxURL = '<?php global $base_url; echo $base_url; ?>' + '/interview_reply/' + jQuery(this).parent().siblings("input").val() + "/reject/" + "0";
-			jQuery(this).parent().parent().parent(".dynamic").load(ajaxURL, function(responseText, textStatus, XMLHttpRequest) {
-				if(textStatus == 'success') {
-					init();
+					jQuery('.accept', this_interview_info.siblings(".reply").children("div")).click(function(){
+						if (jQuery(this).parent().parent().siblings(".interview_info").children(".field-name-field-interview-time-start").children(".date-display-single").length > 0)
+						{
+							var date_str = jQuery(this).parent().parent().siblings(".interview_info").children(".field-name-field-interview-time-start").children(".date-display-single").html();
+							var year = date_str.substr(0, 4);
+							var month = date_str.substr(5, 2);
+							var day = date_str.substr(8, 2);
+							var hour = date_str.substr(11, 2);
+							var minute = date_str.substr(14, 2);				
+							var choose_date = new Date(year, month-1, day, hour, minute, 0).getTime()/1000;
+						}
+						else
+						{
+							var date_element = jQuery(this).parent().parent().siblings(".interview_info").children(".date_choose");
+							var day = date_element.children(".day").children(".choose_day").val();
+							var hour = date_element.children(".hour").children(".choose_hour").val();
+							var minute = date_element.children(".minute").children(".choose_minute").val();
+							if (day == '' || hour == '' || minute == '')
+							{
+								alert('请选择时间');
+								return false;
+							}
+							var day_array = day.split('_');
+							var choose_date = new Date(day_array[0],day_array[1]-1,day_array[2],hour,minute,0).getTime()/1000;
+						}
+						var ajaxURL = '<?php global $base_url; echo $base_url; ?>' + '/interview_reply/' + jQuery(this).parent().siblings("input").val() + "/accept/" + choose_date;
+						jQuery(this).parent().parent().parent(".dynamic").load(ajaxURL, function(responseText, textStatus, XMLHttpRequest) {
+							if(textStatus == 'success') {
+							}
+						}); 
+					});
+					jQuery('.reject', this_interview_info.siblings(".reply").children("div")).click(function(){
+						var ajaxURL = '<?php global $base_url; echo $base_url; ?>' + '/interview_reply/' + jQuery(this).parent().siblings("input").val() + "/reject/" + "0";
+						jQuery(this).parent().parent().parent(".dynamic").load(ajaxURL, function(responseText, textStatus, XMLHttpRequest) {
+							if(textStatus == 'success') {
+							}
+						}); 
+					});
 				}
 			}); 
 		});
-	}
+	});
 </script>
 <div class="<?php print $classes; ?>">
   <?php print render($title_prefix); ?>
