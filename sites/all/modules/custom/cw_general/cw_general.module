@@ -35,7 +35,73 @@ function cw_general_menu()
 		'type'=>MENU_CALLBACK,
 		'access callback'=>TRUE,
 	);
+	$items['interview_reply/%/%/%'] = array(
+		'page callback'=>'cw_general_interview_reply',
+		'page arguments'=> array(
+			1,
+			2,
+			3
+		), //1: interview_invite_id, 2:"accept" or "reject", 3:interview time
+		'type'=>MENU_CALLBACK,
+		'access callback'=>'cw_interview_reply_access',
+		'access arguments'=> array(1),
+	);
 	return $items;
+}
+
+function cw_interview_reply_access($interview_invite)
+{
+	//根据$interview_invite取得交易
+	$trade =          entity_metadata_wrapper('node', $interview_invite)->field_interview_trade->value()->nid;
+	//查看交易的人才所有者是否是当前用户
+	global $user;
+	$talent =         entity_metadata_wrapper('node', $trade)->field_trade_talent->value()->nid;
+	return (entity_metadata_wrapper('node', $talent)->author->uid->value() == $user->uid);
+}
+
+function cw_general_interview_reply($interview_invite, $result, $time)
+{
+	if ($result == 'accept')
+	{
+		//设置面试邀请状态为"接受"
+		$interview_invite_wrapper = entity_metadata_wrapper('node', $interview_invite);
+		$get_term = taxonomy_get_term_by_name('接受', 'invite_status');
+		$interview_invite_wrapper->field_interview_status->set(array_pop($get_term)->tid);
+		$interview_invite_wrapper->field_interview_time_start->set($time);
+		$interview_invite_wrapper->save();
+		//设置交易状态为"面试接受"
+		$trade =        entity_metadata_wrapper('node', $interview_invite)->field_interview_trade->value()->nid;
+		$wrapper = entity_metadata_wrapper('node', $trade);
+		$get_term = taxonomy_get_term_by_name('接受面试', 'term_trade_status');
+		$wrapper->field_trade_status->set(array_pop($get_term)->tid);
+		$wrapper->save();
+		echo '<div class="interview_info" style="width:250px; display:inline-block">';
+		echo '<div>';
+		echo '面试时间'.date('Y/m/d h:i', $interview_invite_wrapper->field_interview_time_start->value());
+		echo '</div>';
+		echo '<div>';
+		echo '面试地点:'.$interview_invite_wrapper->field_interview_invite_address->value();
+		echo '</div>';
+		echo '</div>';
+		echo '<div style="width:46px; display:inline-block">';
+		echo '<input type="hidden" value="'.$interview_invite.'"/>';
+		echo '<div><button class="reject" type="button">拒绝面试</button></div>';
+		echo '</div>';
+	}
+	else if ($result == 'reject')
+	{
+		//设置面试邀请状态为"拒绝"
+		$interview_invite_wrapper = entity_metadata_wrapper('node', $interview_invite);
+		$get_term = taxonomy_get_term_by_name('拒绝', 'invite_status');
+		$interview_invite_wrapper->field_interview_status->set(array_pop($get_term)->tid);
+		$interview_invite_wrapper->save();
+		//设置交易状态为"拒绝面试"
+		$trade =        entity_metadata_wrapper('node', $interview_invite)->field_interview_trade->value()->nid;
+		$wrapper = entity_metadata_wrapper('node', $trade);
+		$get_term = taxonomy_get_term_by_name('拒绝面试', 'term_trade_status');
+		$wrapper->field_trade_status->set(array_pop($get_term)->tid);
+		$wrapper->save();
+	}
 }
 
 function cw_general_get_interview_choose_option($interview_invite)

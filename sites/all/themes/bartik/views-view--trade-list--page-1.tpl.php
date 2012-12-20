@@ -85,6 +85,41 @@
 				}
 			});   		
 		});
+		jQuery('.accept').click(function(){
+			var date_element = jQuery(this).parent().parent().siblings(".interview_info").children(".date_choose");
+			var day = date_element.children(".day").children(".choose_day").val();
+			var hour = date_element.children(".hour").children(".choose_hour").val();
+			var minute = date_element.children(".minute").children(".choose_minute").val();
+			if (day == '' || hour == '' || minute == '')
+			{
+				alert('请选择时间');
+				return false;
+			}
+			var day_array = day.split('_');
+			var choose_date = new Date(day_array[0],day_array[1]-1,day_array[2],hour,minute,0).getTime()/1000;
+			var ajaxURL = '<?php global $base_url; echo $base_url; ?>' + '/interview_reply/' + jQuery(this).parent().siblings("input").val() + "/accept/" + choose_date;
+			jQuery(this).parent().parent().parent(".dynamic").load(ajaxURL, function(responseText, textStatus, XMLHttpRequest) {
+				if(textStatus == 'success') {
+							//重新注册拒绝按钮事件
+							jQuery('.reject').click(function(){
+								var ajaxURL = '<?php global $base_url; echo $base_url; ?>' + '/interview_reply/' + jQuery(this).parent().siblings("input").val() + "/reject/" + "0";
+								jQuery(this).parent().parent().parent(".dynamic").load(ajaxURL, function(responseText, textStatus, XMLHttpRequest) {
+									if(textStatus == 'success') {
+										alert("rejected");
+									}
+								}); 
+							});
+				}
+			}); 
+		});
+		jQuery('.reject').click(function(){
+			var ajaxURL = '<?php global $base_url; echo $base_url; ?>' + '/interview_reply/' + jQuery(this).parent().siblings("input").val() + "/reject/" + "0";
+			jQuery(this).parent().parent().parent(".dynamic").load(ajaxURL, function(responseText, textStatus, XMLHttpRequest) {
+				if(textStatus == 'success') {
+					alert("rejected");
+				}
+			}); 
+		});
 	}); 
 </script>
 <div class="<?php print $classes; ?>">
