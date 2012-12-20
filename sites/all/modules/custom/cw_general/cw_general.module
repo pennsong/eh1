@@ -46,16 +46,128 @@ function cw_general_menu()
 		'access callback'=>'cw_interview_reply_access',
 		'access arguments'=> array(1),
 	);
+	$items['interview_dynamic_area/%'] = array(
+		'page callback'=>'cw_general_interview_dynamic_area_get',
+		'page arguments'=> array(1), //trade
+		'type'=>MENU_CALLBACK,
+		'access callback'=>'cw_interview_ajax_access',
+		'access arguments'=> array(1), //trade
+	);
+	$items['interview_status_area/%'] = array(
+		'page callback'=>'cw_general_interview_status_area',
+		'page arguments'=> array(1), //trade
+		'type'=>MENU_CALLBACK,
+		'access callback'=>'cw_interview_ajax_access',
+		'access arguments'=> array(1), //trade
+	);
 	return $items;
+}
+
+function cw_general_interview_dynamic_area_get($trade)
+{
+	echo cw_general_interview_dynamic_area($trade);
+}
+
+function cw_general_interview_dynamic_area($trade)
+{
+	$result_str = '';
+	$trade_wrapper = entity_metadata_wrapper('node', $trade);
+	//取得trade状态
+	$status_name = $trade_wrapper->field_trade_status->value()->name;
+	if ($status_name == '面试邀请')
+	{
+		$result_str .= '<div class="interview_info" style="width:250px; display:inline-block">';
+		//查找最新面试邀请entity
+		$query = new EntityFieldQuery();
+		$query->entityCondition('entity_type', 'node')->entityCondition('bundle', 'interview_invite')->propertyCondition('status', 1)->fieldCondition('field_interview_trade', 'target_id', $trade, '=')->propertyOrderBy('created', 'DESC')->range(0, 1);
+		$result = $query->execute();
+		$interview_invite = 0;
+		if (isset($result['node']))
+		{
+			foreach ($result['node'] as $node)
+			{
+				$interview_invite = $node->nid;
+				$interview_invite_obj = node_load($node->nid);
+				if (isset($interview_invite_obj->field_interview_time_start['und'][0]['value']))
+				{
+					//明确指定面试时间
+					$result_str .= render(field_view_field('node', $interview_invite_obj, 'field_interview_time_start', 'small'));
+				}
+				else
+				{
+					$result_str .= '面试时间:';
+					$result_str .= '<div class=date_choose>';
+					$result_str .= '<input type="hidden" value="'.$node->nid.'"/>';
+					$result_str .= '<div class="day" style="display:inline-block"></div>';
+					$result_str .= '<div class="hour" style="display:inline-block"><select class="choose_hour"><option value="">请选择</option></select></div>';
+					$result_str .= '<div class="minute" style="display:inline-block"><select class="choose_minute"><option value="">请选择</option></select></div>';
+					$result_str .= '</div>';
+				}
+				$result_str .= "<div>面试地点:";
+				if (!empty($interview_invite_obj->field_interview_invite_address['und'][0]['value']))
+				{
+					$result_str .= $interview_invite_obj->field_interview_invite_address['und'][0]['value'];
+				}
+				$result_str .= "</div>";
+				$result_str .= "<div>邀请发布时间:";
+				$result_str .= date("y/m/d H:i", $interview_invite_obj->created);
+				$result_str .= "</div>";
+			}
+		}
+		$result_str .= '</div>';
+		$result_str .= '<div style="width:46px; display:inline-block">';
+		$result_str .= '<input type="hidden" value="'.$interview_invite.'" />';
+		$result_str .= '<div><button class="accept" type="button">确认面试</button></div>';
+		$result_str .= '<div><button class="reject" type="button">拒绝面试</button></div>';
+		$result_str .= '</div>';
+	}
+	else if ($status_name == '接受面试')
+	{
+		//查找最新面试邀请entity
+		$query = new EntityFieldQuery();
+		$query->entityCondition('entity_type', 'node')->entityCondition('bundle', 'interview_invite')->propertyCondition('status', 1)->fieldCondition('field_interview_trade', 'target_id', $trade, '=')->propertyOrderBy('created', 'DESC')->range(0, 1);
+		$result = $query->execute();
+		$interview_invite = 0;
+		if (isset($result['node']))
+		{
+			foreach ($result['node'] as $node)
+			{
+				$interview_invite = $node->nid;
+				$interview_invite_wrapper = entity_metadata_wrapper('node', $interview_invite);
+				$result_str .= '<div class="interview_info" style="width:250px; display:inline-block">';
+				$result_str .= '<div>';
+				$result_str .= '面试时间'.date('Y/m/d H:i', $interview_invite_wrapper->field_interview_time_start->value());
+				$result_str .= '</div>';
+				$result_str .= '<div>';
+				$result_str .= '面试地点:'.$interview_invite_wrapper->field_interview_invite_address->value();
+				$result_str .= '</div>';
+				$result_str .= '</div>';
+				$result_str .= '<div style="width:46px; display:inline-block">';
+				$result_str .= '<input type="hidden" value="'.$interview_invite.'"/>';
+				$result_str .= '<div><button class="reject" type="button">拒绝面试</button></div>';
+				$result_str .= '</div>';
+			}
+		}
+	}
+	else if ($status_name == '拒绝面试')
+	{
+		$result_str .= '拒绝面试';
+	}
+	return $result_str;
+}
+
+function cw_interview_ajax_access()
+{
+	return true;
 }
 
 function cw_interview_reply_access($interview_invite)
 {
 	//根据$interview_invite取得交易
-	$trade =          entity_metadata_wrapper('node', $interview_invite)->field_interview_trade->value()->nid;
+	$trade =                   entity_metadata_wrapper('node', $interview_invite)->field_interview_trade->value()->nid;
 	//查看交易的人才所有者是否是当前用户
 	global $user;
-	$talent =         entity_metadata_wrapper('node', $trade)->field_trade_talent->value()->nid;
+	$talent =                    entity_metadata_wrapper('node', $trade)->field_trade_talent->value()->nid;
 	return (entity_metadata_wrapper('node', $talent)->author->uid->value() == $user->uid);
 }
 
@@ -70,23 +182,11 @@ function cw_general_interview_reply($interview_invite, $result, $time)
 		$interview_invite_wrapper->field_interview_time_start->set($time);
 		$interview_invite_wrapper->save();
 		//设置交易状态为"面试接受"
-		$trade =        entity_metadata_wrapper('node', $interview_invite)->field_interview_trade->value()->nid;
+		$trade =                  entity_metadata_wrapper('node', $interview_invite)->field_interview_trade->value()->nid;
 		$wrapper = entity_metadata_wrapper('node', $trade);
 		$get_term = taxonomy_get_term_by_name('接受面试', 'term_trade_status');
 		$wrapper->field_trade_status->set(array_pop($get_term)->tid);
 		$wrapper->save();
-		echo '<div class="interview_info" style="width:250px; display:inline-block">';
-		echo '<div>';
-		echo '面试时间'.date('Y/m/d h:i', $interview_invite_wrapper->field_interview_time_start->value());
-		echo '</div>';
-		echo '<div>';
-		echo '面试地点:'.$interview_invite_wrapper->field_interview_invite_address->value();
-		echo '</div>';
-		echo '</div>';
-		echo '<div style="width:46px; display:inline-block">';
-		echo '<input type="hidden" value="'.$interview_invite.'"/>';
-		echo '<div><button class="reject" type="button">拒绝面试</button></div>';
-		echo '</div>';
 	}
 	else if ($result == 'reject')
 	{
@@ -96,12 +196,13 @@ function cw_general_interview_reply($interview_invite, $result, $time)
 		$interview_invite_wrapper->field_interview_status->set(array_pop($get_term)->tid);
 		$interview_invite_wrapper->save();
 		//设置交易状态为"拒绝面试"
-		$trade =        entity_metadata_wrapper('node', $interview_invite)->field_interview_trade->value()->nid;
+		$trade =                               entity_metadata_wrapper('node', $interview_invite)->field_interview_trade->value()->nid;
 		$wrapper = entity_metadata_wrapper('node', $trade);
 		$get_term = taxonomy_get_term_by_name('拒绝面试', 'term_trade_status');
 		$wrapper->field_trade_status->set(array_pop($get_term)->tid);
 		$wrapper->save();
 	}
+	echo cw_general_interview_dynamic_area(entity_metadata_wrapper('node', $interview_invite)->field_interview_trade->value()->nid);
 }
 
 function cw_general_get_interview_choose_option($interview_invite)
@@ -161,7 +262,7 @@ function cw_general_get_interview_choose_option($interview_invite)
 	ksort($option);
 	//取得已经预约的时间点
 	$get_term = taxonomy_get_term_by_name('接受', 'invite_status');
-	$term_id =          array_pop($get_term)->tid;
+	$term_id =                  array_pop($get_term)->tid;
 	$sub_query = new EntityFieldQuery();
 	$sub_query->entityCondition('entity_type', 'node')->entityCondition('bundle', 'interview_invite')->propertyCondition('status', 1)->fieldCondition('field_interview_status', 'tid', $term_id, '=');
 	$sub_result = $sub_query->execute();

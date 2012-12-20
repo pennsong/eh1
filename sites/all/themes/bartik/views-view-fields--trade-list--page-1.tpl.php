@@ -37,6 +37,7 @@ if (!function_exists('get_trade_status_str'))
 	<?php print _community_tags_node_view($fields['nid']->raw, TRUE); ?>
 </div>
 <div>
+	<input type="hidden" class="trade_id" value="<?php echo $fields['nid']->raw ?>" />
 	<?php if (get_trade_status_str($fields['field_trade_status']->content) == 'offer邀请'): ?>	
 	<div style="width:50px; display:inline-block" class="offer_invite trade_status">
 		<?php print 'offer<br />邀请' ?>
@@ -94,60 +95,5 @@ if (!function_exists('get_trade_status_str'))
 		</div>
 	</div>
 	<div class="dynamic" style="width:300px; display:inline-block">
-	<?php if (get_trade_status_str($fields['field_trade_status']->content) == '面试邀请') : ?>		
-		<div class="interview_info" style="width:250px; display:inline-block">
-		<?php
-			//查找最新面试邀请entity
-			$query = new EntityFieldQuery();
-	
-			$query->entityCondition('entity_type', 'node')
-			  ->entityCondition('bundle', 'interview_invite')
-			  ->propertyCondition('status', 1)
-			  ->fieldCondition('field_interview_trade', 'target_id', $fields['nid']->raw, '=')
-			   ->propertyOrderBy('created', 'DESC')
-			  ->range(0, 1);
-			
-			$result = $query->execute();
-			$interview_invite = 0;
-			if (isset($result['node'])) 
-			{
-	 	 		foreach($result['node'] as $node)
-				{
-					$interview_invite = $node->nid;
-					$interview_invite_obj = node_load($node->nid);
-					if (isset($interview_invite_obj->field_interview_time_start['und'][0]['value']))
-					{
-						//明确指定面试时间			
-						print render(field_view_field('node', $interview_invite_obj, 'field_interview_time_start', 'small'));
-					}
-					else
-					{
-						echo '面试时间:';
-						echo '<div class=date_choose style="display:inline-block">';
-						echo '<input type="hidden" value="'.$node->nid.'"/>';
-						echo '<div class="day" style="display:inline-block"></div>';
-						echo '<div class="hour" style="display:inline-block"><select class="choose_hour"><option value="">请选择</option></select></div>';
-						echo '<div class="minute" style="display:inline-block"><select class="choose_minute"><option value="">请选择</option></select></div>';
-						echo '</div>';
-					}
-					echo "<div>面试地点:";
-					if (!empty($interview_invite_obj->field_interview_invite_address['und'][0]['value']))
-					{
-						echo $interview_invite_obj->field_interview_invite_address['und'][0]['value'];
-					}
-					echo "</div>";
-					echo "<div>邀请发布时间:";
-					echo date("y/m/d H:i", $interview_invite_obj->created);
-					echo "</div>";
-				}
-			}
-		?>
-		</div>
-		<div style="width:46px; display:inline-block">
-			<input type="hidden" value="<?php echo $interview_invite; ?>" />
-			<div><button class="accept" type="button">确认面试</button></div>
-			<div><button class="reject" type="button">拒绝面试</button></div>
-		</div>
-		<?php endif; ?>
 	</div>
 </div>
