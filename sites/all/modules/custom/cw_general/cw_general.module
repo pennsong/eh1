@@ -78,17 +78,17 @@ function cw_general_trade_status_area($trade)
 	else if ($status_name == '交易成功')
 	{
 		$class_str = 'trade_success';
-		$html_str = 'offer<br />邀请';
+		$html_str = '交易<br />成功';
 	}
 	else if ($status_name == '已到岗')
 	{
 		$class_str = 'on_position';
-		$html_str = 'offer<br />邀请';
+		$html_str = '已<br />到岗';
 	}
 	else if ($status_name == '拒绝offer')
 	{
 		$class_str = 'offer_reject';
-		$html_str = 'offer<br />邀请';
+		$html_str = '拒绝<br />offer';
 	}
 	else if ($status_name == '拒绝面试')
 	{
@@ -98,22 +98,27 @@ function cw_general_trade_status_area($trade)
 	else if ($status_name == '接受offer')
 	{
 		$class_str = 'offer_accept';
-		$html_str = 'offer<br />邀请';
+		$html_str = '接受<br />offer';
 	}
 	else if ($status_name == '接受面试')
 	{
 		$class_str = 'interview_accept';
-		$html_str = 'offer<br />邀请';
+		$html_str = '接受<br />面试';
 	}
 	else if ($status_name == '未到岗')
 	{
 		$class_str = 'no_on_position';
-		$html_str = 'offer<br />邀请';
+		$html_str = '未<br />到岗';
 	}
 	else if ($status_name == '面试邀请')
 	{
 		$class_str = 'interview_invite';
-		$html_str = 'offer<br />邀请';
+		$html_str = '面试<br />邀请';
+	}
+	else if ($status_name == '面试被拒')
+	{
+		$class_str = 'interview_not_pass';
+		$html_str = '面试<br />被拒';
 	}
 	echo '<div style="width:50px; display:inline-block" class="'.$class_str.' trade_status">';
 	echo $html_str;
@@ -243,7 +248,31 @@ function cw_general_interview_dynamic_area($trade)
 				$interview_invite_wrapper = entity_metadata_wrapper('node', $interview_invite);
 				$result_str .= '<div>操作备注:'.$interview_invite_wrapper->field_interview_reject_note->value().'</div>';
 			}
-		}					
+		}
+	}
+	else if ($status_name == '面试被拒')
+	{
+		$result_str .= '<div>交易结束原因：被企业方拒绝</div>';
+		$interview_invite_wrapper = entity_metadata_wrapper('node', $trade);
+		$result_str .= '<div>操作备注:'.$interview_invite_wrapper->field_trade_company_note->value().'</div>';
+	}
+	else if ($status_name == 'offer邀请')
+	{
+		//查找最新offer邀请
+		$query = new EntityFieldQuery();
+		$query->entityCondition('entity_type', 'node')->entityCondition('bundle', 'offer')->propertyCondition('status', 1)->fieldCondition('field_offer_trade', 'target_id', $trade, '=')->propertyOrderBy('created', 'DESC')->range(0, 1);
+		$result = $query->execute();
+		if (isset($result['node']))
+		{
+			foreach ($result['node'] as $node)
+			{
+				$offer_id = $node->nid;
+				$offer_wrapper = entity_metadata_wrapper('node', $offer_id);
+				global $base_url;
+				$result_str .= '<div><a href="'.$base_url.'/node/'.$offer_id.'">查看offer</a></div>';
+				$result_str .= '<div>邀请发布时间:'.date('Y-m-d h:i', $offer_wrapper->created->value()).'</div>';
+			}
+		}	
 	}
 	return $result_str;
 }
@@ -256,10 +285,10 @@ function cw_interview_ajax_access()
 function cw_interview_reply_access($interview_invite)
 {
 	//根据$interview_invite取得交易
-	$trade =                       entity_metadata_wrapper('node', $interview_invite)->field_interview_trade->value()->nid;
+	$trade =                         entity_metadata_wrapper('node', $interview_invite)->field_interview_trade->value()->nid;
 	//查看交易的人才所有者是否是当前用户
 	global $user;
-	$talent =                        entity_metadata_wrapper('node', $trade)->field_trade_talent->value()->nid;
+	$talent =                          entity_metadata_wrapper('node', $trade)->field_trade_talent->value()->nid;
 	return (entity_metadata_wrapper('node', $talent)->author->uid->value() == $user->uid);
 }
 
@@ -274,7 +303,7 @@ function cw_general_interview_reply($interview_invite, $result, $time_or_reject_
 		$interview_invite_wrapper->field_interview_time_start->set($time_or_reject_note);
 		$interview_invite_wrapper->save();
 		//设置交易状态为"面试接受"
-		$trade =   entity_metadata_wrapper('node', $interview_invite)->field_interview_trade->value()->nid;
+		$trade =     entity_metadata_wrapper('node', $interview_invite)->field_interview_trade->value()->nid;
 		$wrapper = entity_metadata_wrapper('node', $trade);
 		$get_term = taxonomy_get_term_by_name('接受面试', 'term_trade_status');
 		$wrapper->field_trade_status->set(array_pop($get_term)->tid);
@@ -289,7 +318,7 @@ function cw_general_interview_reply($interview_invite, $result, $time_or_reject_
 		$interview_invite_wrapper->field_interview_reject_note->set($time_or_reject_note);
 		$interview_invite_wrapper->save();
 		//设置交易状态为"拒绝面试"
-		$trade =   entity_metadata_wrapper('node', $interview_invite)->field_interview_trade->value()->nid;
+		$trade =     entity_metadata_wrapper('node', $interview_invite)->field_interview_trade->value()->nid;
 		$wrapper = entity_metadata_wrapper('node', $trade);
 		$get_term = taxonomy_get_term_by_name('拒绝面试', 'term_trade_status');
 		$wrapper->field_trade_status->set(array_pop($get_term)->tid);
@@ -354,7 +383,7 @@ function cw_general_get_interview_choose_option($interview_invite)
 	ksort($option);
 	//取得已经预约的时间点
 	$get_term = taxonomy_get_term_by_name('接受', 'invite_status');
-	$term_id =                      array_pop($get_term)->tid;
+	$term_id =                        array_pop($get_term)->tid;
 	$sub_query = new EntityFieldQuery();
 	$sub_query->entityCondition('entity_type', 'node')->entityCondition('bundle', 'interview_invite')->propertyCondition('status', 1)->fieldCondition('field_interview_status', 'tid', $term_id, '=');
 	$sub_result = $sub_query->execute();
