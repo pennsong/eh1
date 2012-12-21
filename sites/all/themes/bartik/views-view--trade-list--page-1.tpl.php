@@ -139,6 +139,11 @@
 				}
 			}); 
 		});
+		jQuery(".dynamic").delegate(".reply > div > .view_offer", "click", function(){
+			var url = '<?php global $base_url; echo $base_url; ?>' + '/node/' + jQuery(this).parent().siblings("input").val();
+			window.open(url);
+  			return false;
+		});
 		jQuery(".dynamic").delegate(".reply > div > .reject_offer", "click", function(){
 			jQuery(this).siblings(".reject_confirm").show();
 		});
