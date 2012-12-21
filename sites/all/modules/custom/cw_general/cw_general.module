@@ -41,9 +41,20 @@ function cw_general_menu()
 			1,
 			2,
 			3
-		), //1: interview_invite_id, 2:"accept" or "reject", 3:interview time or reject_note
+		), //1: interview_invite_id, 2:"accept_interview" or "reject_interview", 3:interview time or reject_note
 		'type'=>MENU_CALLBACK,
 		'access callback'=>'cw_interview_reply_access',
+		'access arguments'=> array(1),
+	);
+	$items['offer_reply/%/%/%'] = array(
+		'page callback'=>'cw_general_offer_reply',
+		'page arguments'=> array(
+			1,
+			2,
+			3
+		), //1: offer_id, 2:"accept_offer" or "reject_offer", 3:'' or reject_note
+		'type'=>MENU_CALLBACK,
+		'access callback'=>'cw_offer_reply_access',
 		'access arguments'=> array(1),
 	);
 	$items['interview_dynamic_area/%'] = array(
@@ -180,16 +191,16 @@ function cw_general_interview_dynamic_area($trade)
 		$result_str .= '</div>';
 		$result_str .= '<div class="reply" style="width:46px; display:inline-block">';
 		$result_str .= '	<input type="hidden" value="'.$interview_invite.'" />';
-		$result_str .= '	<div><button class="accept" type="button">确认面试</button></div>';
+		$result_str .= '	<div><button class="accept_interview" type="button">确认面试</button></div>';
 		$result_str .= '	<div style="position:relative">';
-		$result_str .= '		<button class="reject" type="button">拒绝面试</button>';
+		$result_str .= '		<button class="reject_interview" type="button">拒绝面试</button>';
 		$result_str .= '		<div class="reject_confirm" style="z-index: 1000; display:none; position:absolute; top: 30px; left: -200px; height: 150px; width: 300px; background-color: white; border: 1px black solid; padding: 10px;">';
 		$result_str .= '			<div>确认要拒绝?</div>';
 		$result_str .= '			<div>(该人才将在三个月内无法再次被匹配该职位)</div>';
 		$result_str .= '			<div>拒绝原因:</div>';
 		$result_str .= '			<div><textarea class="reject_note"></textarea></div>';
-		$result_str .= '			<button class="yes" type="button">确认</button>';
-		$result_str .= '			<button class="no" type="button">取消</button>';
+		$result_str .= '			<button class="yes_interview" type="button">确认</button>';
+		$result_str .= '			<button class="no_interview" type="button">取消</button>';
 		$result_str .= '		</div>';
 		$result_str .= '	</div>';
 		$result_str .= '</div>';
@@ -218,14 +229,14 @@ function cw_general_interview_dynamic_area($trade)
 				$result_str .= '<div class="reply" style="width:46px; display:inline-block">';
 				$result_str .= '	<input type="hidden" value="'.$interview_invite.'"/>';
 				$result_str .= '	<div style="position:relative">';
-				$result_str .= '		<button class="reject" type="button">拒绝面试</button>';
+				$result_str .= '		<button class="reject_interview" type="button">拒绝面试</button>';
 				$result_str .= '		<div class="reject_confirm" style="z-index: 1000; display:none; position:absolute; top: 30px; left: -200px; height: 150px; width: 300px; background-color: white; border: 1px black solid; padding: 10px;">';
 				$result_str .= '			<div>确认要拒绝?</div>';
 				$result_str .= '			<div>(该人才将在三个月内无法再次被匹配该职位)</div>';
 				$result_str .= '			<div>拒绝原因:</div>';
 				$result_str .= '			<div><textarea class="reject_note"></textarea></div>';
-				$result_str .= '			<button class="yes" type="button">确认</button>';
-				$result_str .= '			<button class="no" type="button">取消</button>';
+				$result_str .= '			<button class="yes_interview" type="button">确认</button>';
+				$result_str .= '			<button class="no_interview" type="button">取消</button>';
 				$result_str .= '		</div>';
 				$result_str .= '	</div>';
 				$result_str .= '</div>';
@@ -269,10 +280,27 @@ function cw_general_interview_dynamic_area($trade)
 				$offer_id = $node->nid;
 				$offer_wrapper = entity_metadata_wrapper('node', $offer_id);
 				global $base_url;
-				$result_str .= '<div><a href="'.$base_url.'/node/'.$offer_id.'">查看offer</a></div>';
-				$result_str .= '<div>邀请发布时间:'.date('Y-m-d h:i', $offer_wrapper->created->value()).'</div>';
+				$result_str .= '<div class="interview_info" style="width:250px; display:inline-block">';
+				$result_str .= '	<div><a href="'.$base_url.'/node/'.$offer_id.'">查看offer</a></div>';
+				$result_str .= '	<div>邀请发布时间:'.date('Y-m-d h:i', $offer_wrapper->created->value()).'</div>';
+				$result_str .= '</div>';
+				$result_str .= '<div class="reply" style="width:46px; display:inline-block">';
+				$result_str .= '	<input type="hidden" value="'.$offer_id.'" />';
+				$result_str .= '	<div><button class="accept_offer" type="button">确认offer</button></div>';
+				$result_str .= '	<div style="position:relative">';
+				$result_str .= '		<button class="reject_offer" type="button">拒绝offer</button>';
+				$result_str .= '		<div class="reject_confirm" style="z-index: 1000; display:none; position:absolute; top: 30px; left: -200px; height: 150px; width: 300px; background-color: white; border: 1px black solid; padding: 10px;">';
+				$result_str .= '			<div>确认要拒绝?</div>';
+				$result_str .= '			<div>(该人才将在三个月内无法再次被匹配该职位)</div>';
+				$result_str .= '			<div>拒绝原因:</div>';
+				$result_str .= '			<div><textarea class="reject_note"></textarea></div>';
+				$result_str .= '			<button class="yes_offer" type="button">确认</button>';
+				$result_str .= '			<button class="no_offer" type="button">取消</button>';
+				$result_str .= '		</div>';
+				$result_str .= '	</div>';
+				$result_str .= '</div>';
 			}
-		}	
+		}
 	}
 	return $result_str;
 }
@@ -285,16 +313,27 @@ function cw_interview_ajax_access()
 function cw_interview_reply_access($interview_invite)
 {
 	//根据$interview_invite取得交易
-	$trade =                         entity_metadata_wrapper('node', $interview_invite)->field_interview_trade->value()->nid;
+	$trade = entity_metadata_wrapper('node', $interview_invite)->field_interview_trade->value()->nid;
 	//查看交易的人才所有者是否是当前用户
 	global $user;
-	$talent =                          entity_metadata_wrapper('node', $trade)->field_trade_talent->value()->nid;
+	$talent = entity_metadata_wrapper('node', $trade)->field_trade_talent->value()->nid;
 	return (entity_metadata_wrapper('node', $talent)->author->uid->value() == $user->uid);
 }
 
+function cw_offer_reply_access($offer)
+{
+	//根据$offer取得交易
+	$trade = entity_metadata_wrapper('node', $offer)->field_offer_trade->value()->nid;
+	//查看交易的人才所有者是否是当前用户
+	global $user;
+	$talent = entity_metadata_wrapper('node', $trade)->field_trade_talent->value()->nid;
+	return (entity_metadata_wrapper('node', $talent)->author->uid->value() == $user->uid);
+}
+
+
 function cw_general_interview_reply($interview_invite, $result, $time_or_reject_note)
 {
-	if ($result == 'accept')
+	if ($result == 'accept_interview')
 	{
 		//设置面试邀请状态为"接受"
 		$interview_invite_wrapper = entity_metadata_wrapper('node', $interview_invite);
@@ -303,13 +342,13 @@ function cw_general_interview_reply($interview_invite, $result, $time_or_reject_
 		$interview_invite_wrapper->field_interview_time_start->set($time_or_reject_note);
 		$interview_invite_wrapper->save();
 		//设置交易状态为"面试接受"
-		$trade =     entity_metadata_wrapper('node', $interview_invite)->field_interview_trade->value()->nid;
+		$trade =        entity_metadata_wrapper('node', $interview_invite)->field_interview_trade->value()->nid;
 		$wrapper = entity_metadata_wrapper('node', $trade);
 		$get_term = taxonomy_get_term_by_name('接受面试', 'term_trade_status');
 		$wrapper->field_trade_status->set(array_pop($get_term)->tid);
 		$wrapper->save();
 	}
-	else if ($result == 'reject')
+	else if ($result == 'reject_interview')
 	{
 		//设置面试邀请状态为"拒绝"
 		$interview_invite_wrapper = entity_metadata_wrapper('node', $interview_invite);
@@ -318,9 +357,42 @@ function cw_general_interview_reply($interview_invite, $result, $time_or_reject_
 		$interview_invite_wrapper->field_interview_reject_note->set($time_or_reject_note);
 		$interview_invite_wrapper->save();
 		//设置交易状态为"拒绝面试"
-		$trade =     entity_metadata_wrapper('node', $interview_invite)->field_interview_trade->value()->nid;
+		$trade =        entity_metadata_wrapper('node', $interview_invite)->field_interview_trade->value()->nid;
 		$wrapper = entity_metadata_wrapper('node', $trade);
 		$get_term = taxonomy_get_term_by_name('拒绝面试', 'term_trade_status');
+		$wrapper->field_trade_status->set(array_pop($get_term)->tid);
+		$wrapper->save();
+	}
+}
+
+function cw_general_offer_reply($offer, $result, $emptystr_or_reject_note)
+{
+	if ($result == 'accept_offer')
+	{
+		//设置offer状态为"接受"
+		$offer_wrapper = entity_metadata_wrapper('node', $offer);
+		$get_term = taxonomy_get_term_by_name('接受', 'invite_status');
+		$offer_wrapper->field_offer_status->set(array_pop($get_term)->tid);
+		$offer_wrapper->save();
+		//设置交易状态为"接受offer"
+		$trade = entity_metadata_wrapper('node', $offer)->field_offer_trade->value()->nid;
+		$wrapper = entity_metadata_wrapper('node', $trade);
+		$get_term = taxonomy_get_term_by_name('接受offer', 'term_trade_status');
+		$wrapper->field_trade_status->set(array_pop($get_term)->tid);
+		$wrapper->save();
+	}
+	else if ($result == 'reject_offer')
+	{
+		//设置offer状态为"拒绝"
+		$offer_wrapper = entity_metadata_wrapper('node', $offer);
+		$get_term = taxonomy_get_term_by_name('拒绝', 'invite_status');
+		$offer_wrapper->field_offer_status->set(array_pop($get_term)->tid);
+		$offer_wrapper->field_offer_reject_note->set($time_or_reject_note);
+		$offer_wrapper->save();
+		//设置交易状态为"拒绝offer"
+		$trade = entity_metadata_wrapper('node', $offer)->field_offer_trade->value()->nid;
+		$wrapper = entity_metadata_wrapper('node', $trade);
+		$get_term = taxonomy_get_term_by_name('拒绝offer', 'term_trade_status');
 		$wrapper->field_trade_status->set(array_pop($get_term)->tid);
 		$wrapper->save();
 	}
@@ -383,7 +455,7 @@ function cw_general_get_interview_choose_option($interview_invite)
 	ksort($option);
 	//取得已经预约的时间点
 	$get_term = taxonomy_get_term_by_name('接受', 'invite_status');
-	$term_id =                        array_pop($get_term)->tid;
+	$term_id =                           array_pop($get_term)->tid;
 	$sub_query = new EntityFieldQuery();
 	$sub_query->entityCondition('entity_type', 'node')->entityCondition('bundle', 'interview_invite')->propertyCondition('status', 1)->fieldCondition('field_interview_status', 'tid', $term_id, '=');
 	$sub_result = $sub_query->execute();

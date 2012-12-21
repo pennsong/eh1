@@ -103,10 +103,10 @@
 				});		
 			}
 		});
-		jQuery(".dynamic").delegate(".reply > div > .reject", "click", function(){
+		jQuery(".dynamic").delegate(".reply > div > .reject_interview", "click", function(){
 			jQuery(this).siblings(".reject_confirm").show();
 		});
-		jQuery(".dynamic").delegate(".reply > div > .accept", "click", function(){
+		jQuery(".dynamic").delegate(".reply > div > .accept_interview", "click", function(){
 			if (jQuery(this).parent().parent().siblings(".interview_info").children(".field-name-field-interview-time-start").children(".date-display-single").length > 0)
 			{
 				var date_str = jQuery(this).parent().parent().siblings(".interview_info").children(".field-name-field-interview-time-start").children(".date-display-single").html();
@@ -131,24 +131,57 @@
 				var day_array = day.split('_');
 				var choose_date = new Date(day_array[0],day_array[1]-1,day_array[2],hour,minute,0).getTime()/1000;
 			}
-			var ajaxURL = '<?php global $base_url; echo $base_url; ?>' + '/interview_reply/' + jQuery(this).parent().siblings("input").val() + "/accept/" + choose_date;
+			var ajaxURL = '<?php global $base_url; echo $base_url; ?>' + '/interview_reply/' + jQuery(this).parent().siblings("input").val() + "/accept_interview/" + choose_date;
 			jQuery(this).parent().parent().parent(".dynamic").load(ajaxURL, function(responseText, textStatus, XMLHttpRequest) {
 				if(textStatus == 'success') {
 					reflash_dynamic_area(jQuery(this));
 					reflash_trade_status_area(jQuery(this).siblings(".trade_status"));
 				}
 			}); 
-		});		
-		jQuery(".dynamic").delegate(".reply > div > div > .no", "click", function(){
-			jQuery(this).parent().hide();
 		});
-		jQuery(".dynamic").delegate(".reply > div > div > .yes", "click", function(){
+		jQuery(".dynamic").delegate(".reply > div > .reject_offer", "click", function(){
+			jQuery(this).siblings(".reject_confirm").show();
+		});
+		jQuery(".dynamic").delegate(".reply > div > .accept_offer", "click", function(){
+			if (confirm('恭喜您获得offer。\n请通知人才于指定时间到指定地点上岗')) {
+				var ajaxURL = '<?php global $base_url; echo $base_url; ?>' + '/offer_reply/' + jQuery(this).parent().siblings("input").val() + "/accept_offer/" + "empty";
+				jQuery(this).parent().parent().parent(".dynamic").load(ajaxURL, function(responseText, textStatus, XMLHttpRequest) {
+					if(textStatus == 'success') {
+						reflash_dynamic_area(jQuery(this));
+						reflash_trade_status_area(jQuery(this).siblings(".trade_status"));
+					}
+				}); 
+			} else {
+
+			}
+		});	
+		jQuery(".dynamic").delegate(".reply > div > div > .no_offer", "click", function(){
+			jQuery(this).parent().hide();
+		});	
+		jQuery(".dynamic").delegate(".reply > div > div > .yes_offer", "click", function(){
 			if (!jQuery(this).siblings("div").children(".reject_note").val())
 			{
 				alert("请填写拒绝原因!");
 				return false;
 			}
-			var ajaxURL = '<?php global $base_url; echo $base_url; ?>' + '/interview_reply/' + jQuery(this).parent().parent().siblings("input").val() + "/reject/" + jQuery(this).siblings("div").children(".reject_note").val();;;
+			var ajaxURL = '<?php global $base_url; echo $base_url; ?>' + '/offer_reply/' + jQuery(this).parent().parent().siblings("input").val() + "/reject_offer/" + jQuery(this).siblings("div").children(".reject_note").val();
+			jQuery(this).parent().parent().parent().parent(".dynamic").load(ajaxURL, function(responseText, textStatus, XMLHttpRequest) {
+				if(textStatus == 'success') {
+					reflash_dynamic_area(jQuery(this));
+					reflash_trade_status_area(jQuery(this).siblings(".trade_status"));
+				}
+			});
+		});
+		jQuery(".dynamic").delegate(".reply > div > div > .no_interview", "click", function(){
+			jQuery(this).parent().hide();
+		});
+		jQuery(".dynamic").delegate(".reply > div > div > .yes_interview", "click", function(){
+			if (!jQuery(this).siblings("div").children(".reject_note").val())
+			{
+				alert("请填写拒绝原因!");
+				return false;
+			}
+			var ajaxURL = '<?php global $base_url; echo $base_url; ?>' + '/interview_reply/' + jQuery(this).parent().parent().siblings("input").val() + "/reject_interview/" + jQuery(this).siblings("div").children(".reject_note").val();;;
 			jQuery(this).parent().parent().parent().parent(".dynamic").load(ajaxURL, function(responseText, textStatus, XMLHttpRequest) {
 				if(textStatus == 'success') {
 					reflash_dynamic_area(jQuery(this));
