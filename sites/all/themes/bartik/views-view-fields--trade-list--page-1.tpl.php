@@ -38,43 +38,8 @@ if (!function_exists('get_trade_status_str'))
 </div>
 <div>
 	<input type="hidden" class="trade_id" value="<?php echo $fields['nid']->raw ?>" />
-	<?php if (get_trade_status_str($fields['field_trade_status']->content) == 'offer邀请'): ?>	
-	<div style="width:50px; display:inline-block" class="offer_invite trade_status">
-		<?php print 'offer<br />邀请' ?>
+	<div class="trade_status" style="display:inline-block">
 	</div>
-	<?php elseif (get_trade_status_str($fields['field_trade_status']->content) == '交易成功'): ?>
-	<div style="width:50px; display:inline-block" class="trade_success trade_status">
-		<?php print '交易<br />成功' ?>
-	</div>
-	<?php elseif (get_trade_status_str($fields['field_trade_status']->content) == '已到岗'): ?>
-	<div style="width:50px; display:inline-block" class="on_position trade_status">
-		<?php print '已<br />到岗' ?>
-	</div>
-	<?php elseif (get_trade_status_str($fields['field_trade_status']->content) == '拒绝offer'): ?>
-	<div style="width:50px; display:inline-block" class="offer_reject trade_status">
-		<?php print '拒绝<br />offer' ?>
-	</div>
-	<?php elseif (get_trade_status_str($fields['field_trade_status']->content) == '拒绝面试'): ?>
-	<div style="width:50px; display:inline-block" class="interview_reject trade_status">
-		<?php print '拒绝<br />面试' ?>
-	</div>
-	<?php elseif (get_trade_status_str($fields['field_trade_status']->content) == '接受offer'): ?>
-	<div style="width:50px; display:inline-block" class="offer_accept trade_status">
-		<?php print '接受<br />offer' ?>
-	</div>
-	<?php elseif (get_trade_status_str($fields['field_trade_status']->content) == '接受面试'): ?>
-	<div style="width:50px; display:inline-block" class="interview_accept trade_status">
-		<?php print '接受<br />面试' ?>
-	</div>
-	<?php elseif (get_trade_status_str($fields['field_trade_status']->content) == '未到岗'): ?>
-	<div style="width:50px; display:inline-block" class="no_on_position trade_status">
-		<?php print '未<br />到岗' ?>
-	</div>
-	<?php elseif (get_trade_status_str($fields['field_trade_status']->content) == '面试邀请'): ?>
-	<div style="width:50px; display:inline-block" class="interview_invite trade_status">
-		<?php print '面试<br />邀请' ?>
-	</div>
-	<?php endif; ?>
 	<div class="talent_area" style="width:150px; display:inline-block">
 		<div style="position:relative">
 			<?php print $fields['title_2']->label_html.$fields['title_2']->content; ?>
