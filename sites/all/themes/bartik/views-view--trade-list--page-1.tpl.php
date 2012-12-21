@@ -103,6 +103,9 @@
 				});		
 			}
 		});
+		jQuery(".dynamic").delegate(".reply > div > .reject", "click", function(){
+			jQuery(this).siblings(".reject_confirm").show();
+		});
 		jQuery(".dynamic").delegate(".reply > div > .accept", "click", function(){
 			if (jQuery(this).parent().parent().siblings(".interview_info").children(".field-name-field-interview-time-start").children(".date-display-single").length > 0)
 			{
@@ -136,9 +139,17 @@
 				}
 			}); 
 		});		
-		jQuery(".dynamic").delegate(".reply > div > .reject", "click", function(){
-			var ajaxURL = '<?php global $base_url; echo $base_url; ?>' + '/interview_reply/' + jQuery(this).parent().siblings("input").val() + "/reject/" + "0";
-			jQuery(this).parent().parent().parent(".dynamic").load(ajaxURL, function(responseText, textStatus, XMLHttpRequest) {
+		jQuery(".dynamic").delegate(".reply > div > div > .no", "click", function(){
+			jQuery(this).parent().hide();
+		});
+		jQuery(".dynamic").delegate(".reply > div > div > .yes", "click", function(){
+			if (!jQuery(this).siblings("div").children(".reject_note").val())
+			{
+				alert("请填写拒绝原因!");
+				return false;
+			}
+			var ajaxURL = '<?php global $base_url; echo $base_url; ?>' + '/interview_reply/' + jQuery(this).parent().parent().siblings("input").val() + "/reject/" + jQuery(this).siblings("div").children(".reject_note").val();;;
+			jQuery(this).parent().parent().parent().parent(".dynamic").load(ajaxURL, function(responseText, textStatus, XMLHttpRequest) {
 				if(textStatus == 'success') {
 					reflash_dynamic_area(jQuery(this));
 					reflash_trade_status_area(jQuery(this).siblings(".trade_status"));
