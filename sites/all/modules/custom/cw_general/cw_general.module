@@ -71,7 +71,37 @@ function cw_general_menu()
 		'access callback'=>'cw_interview_ajax_access',
 		'access arguments'=> array(1), //trade
 	);
+	$items['hunter_interview_stage_trade'] = array(
+		'page callback'=>'cw_general_hunter_interview_stage_trade',
+		'type'=>MENU_CALLBACK,
+		'access callback'=>TRUE,
+	);
+	$items['hunter_offer_stage_trade'] = array(
+		'page callback'=>'cw_general_hunter_offer_stage_trade',
+		'type'=>MENU_CALLBACK,
+		'access callback'=>TRUE,
+	);
 	return $items;
+}
+
+function cw_general_hunter_interview_stage_trade()
+{
+	//取得面试阶段状态
+	$tid1 = array_pop(taxonomy_get_term_by_name('面试邀请', 'term_trade_status'))->tid;
+	$tid2 = array_pop(taxonomy_get_term_by_name('接受面试', 'term_trade_status'))->tid;
+	global $base_url;
+	$url = $base_url."/hunter_my_trade_list?field_trade_status_tid[]=".$tid1."&field_trade_status_tid[]=".$tid2;
+	drupal_goto($url);
+}
+
+function cw_general_hunter_offer_stage_trade()
+{
+	//取得offer阶段状态
+	$tid1 = array_pop(taxonomy_get_term_by_name('offer邀请', 'term_trade_status'))->tid;
+	$tid2 = array_pop(taxonomy_get_term_by_name('接受offer', 'term_trade_status'))->tid;
+	global $base_url;
+	$url = $base_url."/hunter_my_trade_list?field_trade_status_tid[]=".$tid1."&field_trade_status_tid[]=".$tid2;
+	drupal_goto($url);
 }
 
 function cw_general_trade_status_area($trade)
@@ -315,7 +345,7 @@ function cw_general_interview_dynamic_area($trade)
 				$offer_id = $node->nid;
 				$offer_wrapper = entity_metadata_wrapper('node', $offer_id);
 				//取得对应job
-				$job =   entity_metadata_wrapper('node', $trade)->field_trade_job->value()->nid;
+				$job =    entity_metadata_wrapper('node', $trade)->field_trade_job->value()->nid;
 				$job_wrapper = entity_metadata_wrapper('node', $job);
 				if ($job_wrapper->field_job_commission_time->value() > 0)
 				{
@@ -366,20 +396,20 @@ function cw_interview_ajax_access()
 function cw_interview_reply_access($interview_invite)
 {
 	//根据$interview_invite取得交易
-	$trade =       entity_metadata_wrapper('node', $interview_invite)->field_interview_trade->value()->nid;
+	$trade =        entity_metadata_wrapper('node', $interview_invite)->field_interview_trade->value()->nid;
 	//查看交易的人才所有者是否是当前用户
 	global $user;
-	$talent =       entity_metadata_wrapper('node', $trade)->field_trade_talent->value()->nid;
+	$talent =        entity_metadata_wrapper('node', $trade)->field_trade_talent->value()->nid;
 	return (entity_metadata_wrapper('node', $talent)->author->uid->value() == $user->uid);
 }
 
 function cw_offer_reply_access($offer)
 {
 	//根据$offer取得交易
-	$trade =       entity_metadata_wrapper('node', $offer)->field_offer_trade->value()->nid;
+	$trade =        entity_metadata_wrapper('node', $offer)->field_offer_trade->value()->nid;
 	//查看交易的人才所有者是否是当前用户
 	global $user;
-	$talent =       entity_metadata_wrapper('node', $trade)->field_trade_talent->value()->nid;
+	$talent =        entity_metadata_wrapper('node', $trade)->field_trade_talent->value()->nid;
 	return (entity_metadata_wrapper('node', $talent)->author->uid->value() == $user->uid);
 }
 
@@ -394,7 +424,7 @@ function cw_general_interview_reply($interview_invite, $result, $time_or_reject_
 		$interview_invite_wrapper->field_interview_time_start->set($time_or_reject_note);
 		$interview_invite_wrapper->save();
 		//设置交易状态为"面试接受"
-		$trade =              entity_metadata_wrapper('node', $interview_invite)->field_interview_trade->value()->nid;
+		$trade =               entity_metadata_wrapper('node', $interview_invite)->field_interview_trade->value()->nid;
 		$wrapper = entity_metadata_wrapper('node', $trade);
 		$get_term = taxonomy_get_term_by_name('接受面试', 'term_trade_status');
 		$wrapper->field_trade_status->set(array_pop($get_term)->tid);
@@ -409,7 +439,7 @@ function cw_general_interview_reply($interview_invite, $result, $time_or_reject_
 		$interview_invite_wrapper->field_interview_reject_note->set($time_or_reject_note);
 		$interview_invite_wrapper->save();
 		//设置交易状态为"拒绝面试"
-		$trade =              entity_metadata_wrapper('node', $interview_invite)->field_interview_trade->value()->nid;
+		$trade =               entity_metadata_wrapper('node', $interview_invite)->field_interview_trade->value()->nid;
 		$wrapper = entity_metadata_wrapper('node', $trade);
 		$get_term = taxonomy_get_term_by_name('拒绝面试', 'term_trade_status');
 		$wrapper->field_trade_status->set(array_pop($get_term)->tid);
@@ -427,7 +457,7 @@ function cw_general_offer_reply($offer, $result, $emptystr_or_reject_note)
 		$offer_wrapper->field_offer_status->set(array_pop($get_term)->tid);
 		$offer_wrapper->save();
 		//设置交易状态为"接受offer"
-		$trade =       entity_metadata_wrapper('node', $offer)->field_offer_trade->value()->nid;
+		$trade =        entity_metadata_wrapper('node', $offer)->field_offer_trade->value()->nid;
 		$wrapper = entity_metadata_wrapper('node', $trade);
 		$get_term = taxonomy_get_term_by_name('接受offer', 'term_trade_status');
 		$wrapper->field_trade_status->set(array_pop($get_term)->tid);
@@ -442,7 +472,7 @@ function cw_general_offer_reply($offer, $result, $emptystr_or_reject_note)
 		$offer_wrapper->field_offer_reject_note->set($emptystr_or_reject_note);
 		$offer_wrapper->save();
 		//设置交易状态为"拒绝offer"
-		$trade =       entity_metadata_wrapper('node', $offer)->field_offer_trade->value()->nid;
+		$trade =        entity_metadata_wrapper('node', $offer)->field_offer_trade->value()->nid;
 		$wrapper = entity_metadata_wrapper('node', $trade);
 		$get_term = taxonomy_get_term_by_name('拒绝offer', 'term_trade_status');
 		$wrapper->field_trade_status->set(array_pop($get_term)->tid);
@@ -507,7 +537,7 @@ function cw_general_get_interview_choose_option($interview_invite)
 	ksort($option);
 	//取得已经预约的时间点
 	$get_term = taxonomy_get_term_by_name('接受', 'invite_status');
-	$term_id =                                 array_pop($get_term)->tid;
+	$term_id =                                  array_pop($get_term)->tid;
 	$sub_query = new EntityFieldQuery();
 	$sub_query->entityCondition('entity_type', 'node')->entityCondition('bundle', 'interview_invite')->propertyCondition('status', 1)->fieldCondition('field_interview_status', 'tid', $term_id, '=');
 	$sub_result = $sub_query->execute();

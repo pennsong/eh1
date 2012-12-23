@@ -62,7 +62,7 @@
           // Clear field and focus it.
           textfield.val('').focus();
         };
-        var button = $('<input type="button" class="form-button add" value="'+ Drupal.communityTags.checkPlain(o.add) +'" />').click(addHandler);
+        var button = $('<input type="button" class="form-button add_tag" value="'+ Drupal.communityTags.checkPlain(o.add) +'" />').click(addHandler);
         $(this.form).submit(function () { addHandler(); return false; });
 
         // Prepare the delete Ajax handler.
