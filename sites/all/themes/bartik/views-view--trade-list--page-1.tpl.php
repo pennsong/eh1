@@ -115,6 +115,50 @@ else
 			jQuery(".dynamic").each(function(){
 				reflash_dynamic_area(jQuery(this));
 			});
+			jQuery('.dynamic').delegate('.reply > .trade_hunter_score > a','click', function(e){
+				e.preventDefault();	
+			});
+			jQuery('.dynamic').delegate('.reply > .trade_hunter_score > a','hover', function( event ) {
+			    if( event.type === 'mouseenter' ) 
+			    {
+					var ajaxURL = '<?php global $base_url; echo $base_url; ?>' + '/trade_hunter_score/' + jQuery(this).parent().attr("id");
+					jQuery(this).siblings(".score").load(ajaxURL, function(responseText, textStatus, XMLHttpRequest) {
+						if(textStatus == 'success') {
+						}		
+					});					    	
+			    }
+			    else
+			    {
+			    	jQuery(this).siblings(".score").html('');
+			    }
+			});
+			jQuery('.dynamic').delegate('.reply > div > .score_company','click', function( event ) {
+				jQuery(this).siblings('div').toggle();
+			});
+			jQuery('.dynamic').delegate('.reply > div > .score_choose > div > input','click', function( event ) {
+				var dynamic = jQuery(this).parent().parent().parent().parent().parent();
+				var score = 0;
+				if (jQuery(this).val() == '好评')
+				{
+					score = 1;
+				}
+				else if (jQuery(this).val() == '中评')
+				{
+					score = 0;
+				}
+				else if (jQuery(this).val() == '差评')
+				{
+					score = -1;
+				}
+				var ajaxURL = '<?php global $base_url; echo $base_url; ?>' + '/score_to_company/' + jQuery(this).parent().parent().parent().parent().parent().siblings(".trade_id").val() + "/" + score;
+				jQuery.ajax({
+				  url: ajaxURL,
+				  success: function(data) {
+				    alert('给企业评价成功!');				   
+				    reflash_dynamic_area(dynamic);
+				  }
+				});
+			});			
 			jQuery(".dynamic").delegate(".interview_info > .date_choose > .day > .choose_day", "change", function(){
 				var this_date_choose = jQuery(this).parent().parent();
 				var interview_invite_id = this_date_choose.children(".interview_invite_id").val();	
