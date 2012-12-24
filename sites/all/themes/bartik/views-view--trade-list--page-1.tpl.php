@@ -199,14 +199,14 @@ else
 				jQuery(this).siblings(".reject_confirm").show();
 			});
 			jQuery(".dynamic").delegate(".reply > div > .accept_interview", "click", function(){
-				if (jQuery(this).parent().parent().siblings(".interview_info").children(".field-name-field-interview-time-start").children(".date-display-single").length > 0)
+				if (jQuery(this).parent().parent().siblings(".interview_info").children(".field-name-field-calendar-date").children(".date-display-single").length > 0)
 				{
-					var date_str = jQuery(this).parent().parent().siblings(".interview_info").children(".field-name-field-interview-time-start").children(".date-display-single").html();
+					var date_str = jQuery(this).parent().parent().siblings(".interview_info").children(".field-name-field-calendar-date").children(".date-display-single").html();
 					var year = date_str.substr(0, 4);
 					var month = date_str.substr(5, 2);
 					var day = date_str.substr(8, 2);
 					var hour = date_str.substr(11, 2);
-					var minute = date_str.substr(14, 2);				
+					var minute = date_str.substr(14, 2);			
 					var choose_date = new Date(year, month-1, day, hour, minute, 0).getTime()/1000;
 				}
 				else
