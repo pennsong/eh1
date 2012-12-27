@@ -102,9 +102,45 @@
 		</div>		
 		<div style="display:inline-block; width: 130px; vertical-align: top">
 			<div><?php print render($content['post_date']); ?></div>
+			<div><a href="<?php echo $node_url ?>" target='_blank'>查看详情</a></div>
 		</div>
 	</div>
 	<div style="display:inline-block; width: 100px; vertical-align: top">
-		test
+		<input class="talent_id" type="hidden" value="<?php echo $node->nid; ?>" />
+		<div style="position:relative">
+			<input class="interview_invite_button" type="button" value="面试通知"/>
+			<div class="sub" style="display:none; position:absolute; top: 20px; z-index:1000;  background-color: #EEEEBB">
+				<div>时间:</div>
+				<div><input class="time" id="time" type="input" /></div>
+				<div>地点:</div>
+				<div><input class="address" type="input" /></div>
+				<div><input class="interview_time_submit" type="button" value="发布面试邀请" /></div>
+				<hr />
+				<div class="arrange_div">
+					
+				</div>
+				<div><input class="interview_arrange_submit" type="button" value="发布面试安排" /></div>
+				<hr />			
+				<div><input class="interview_time_submit_cancel cancel" type="button" value="取消" /></div>
+			</div>
+		</div>
+		<div style="position:relative">
+			<input class="offer_button" type="button" value="offer通知"/>
+			<div class="sub" style="display:none; position:absolute; top: 20px; z-index:1000;  background-color: #EEEEBB">
+				<div>时间:</div>
+				<div><input class="time" type="input" /></div>
+				<div>地点:</div>
+				<div><input class="address" type="input" /></div>
+				<div>联系方式:</div>
+				<div><input class="contact" type="input" /></div>
+				<div>标题:</div>
+				<div><input class="title" type="input" /></div>
+				<div>内容:</div>
+				<div><textarea class="content" rows="4" cols="20"></textarea></div>
+				<div><input class="offer_submit" type="button" value="发布offer邀请" /></div>
+				<div><input class="offer_submit_cancel cancel" type="button" value="取消" /></div>
+			</div>
+		</div>
+		<div><input class="reject_button" type="button" value="不再考虑"/></div>
 	</div>
 </div>
