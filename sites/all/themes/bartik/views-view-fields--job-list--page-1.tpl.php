@@ -50,6 +50,9 @@
 	{
 		$recruited_num = count($result['node']);
 	}
+	
+	//取得匹配人数
+	$fit_num = cw_general_fit_talent_num($fields['nid']->raw);
 ?>
 <div style="display:inline-block; width:70px">
 <?php echo $publish_mark; ?>
@@ -106,5 +109,10 @@
 	<a href="<?php echo $base_url.'/node/'.$fields['nid']->raw.'/edit'; ?>">编辑</a>
 </div>
 <div style="display:inline-block; width:100px">
-	已招<?php echo $recruited_num; ?>人
+	<div>
+		已招<?php echo $recruited_num; ?>人
+	</div>
+	<div>
+		<a href="<?php global $base_url; echo $base_url.'/node/'.$fields['nid']->raw.'/choose_talent'; ?>">匹配人数:<?php echo $fit_num; ?>人</a>
+	</div>
 </div>
